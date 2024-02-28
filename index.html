@@ -69,6 +69,20 @@
         #clear-button:hover {
             background-color: #c82333; /* Darker red on hover */
         }
+
+        .processing {
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -81,71 +95,6 @@
     <div id="sql-links"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
-    <script>
-        function handleFiles(event) {
-            const files = event.target.files;
-            const sqlLinksContainer = document.getElementById('sql-links');
-            sqlLinksContainer.innerHTML = '';
-
-            // Add visual feedback for file processing
-            const processingMsg = document.createElement('p');
-            processingMsg.innerText = 'Processing files...';
-            sqlLinksContainer.appendChild(processingMsg);
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const reader = new FileReader();
-
-                reader.onload = function(event) {
-                    try {
-                        const data = new Uint8Array(event.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-
-                        workbook.SheetNames.forEach(sheetName => {
-                            const sheet = workbook.Sheets[sheetName];
-                            const tableName = sheetName.replace(/\s+/g, '_');
-                            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                            const columns = jsonData[0];
-                            const insertSQL = jsonData.slice(1).map(row => {
-                                const values = row.map(value => {
-                                    if (value === '' || typeof value === 'undefined') {
-                                        return 'NULL';
-                                    } else {
-                                        const cleanedValue = typeof value === 'string' ? value.replace(/&nbsp;/g, '').trim() : value;
-                                        return typeof cleanedValue === 'string' ? `'${cleanedValue.replace(/'/g, "''")}'` : `'${cleanedValue}'`;
-                                    }
-                                }).join(', ');
-                                return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values});`;
-                            }).join('\n');
-                            const blob = new Blob([insertSQL], { type: 'text/plain' });
-                            const link = document.createElement('a');
-                            link.href = window.URL.createObjectURL(blob);
-                            link.download = `${tableName}.sql`;
-                            link.innerText = `Download ${tableName}.sql`;
-                            link.classList.add('sql-link');
-                            sqlLinksContainer.appendChild(link);
-                        });
-                    } catch (error) {
-                        console.error('Error processing file:', error);
-                        // Add error message if file processing fails
-                        const errorMsg = document.createElement('p');
-                        errorMsg.innerText = `Error processing ${file.name}`;
-                        errorMsg.style.color = 'red';
-                        sqlLinksContainer.appendChild(errorMsg);
-                    }
-                };
-
-                reader.readAsArrayBuffer(file);
-            }
-        }
-
-        function clearFiles() {
-            // Clear the file input and SQL links
-            const fileInput = document.getElementById('file-input');
-            fileInput.value = '';
-            const sqlLinksContainer = document.getElementById('sql-links');
-            sqlLinksContainer.innerHTML = '';
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
