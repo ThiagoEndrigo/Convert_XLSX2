@@ -23,14 +23,17 @@ function handleFiles(event) {
                 workbook.SheetNames.forEach(sheetName => {
                     const sheet = workbook.Sheets[sheetName];
                     const tableName = sheetName.replace(/\s+/g, '_');
-                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                    const columns = jsonData[0];
-                    const insertSQL = jsonData.slice(1).map(row => {
-                        const values = row.map(value => {
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { raw: false });
+                    const columns = Object.keys(jsonData[0]);
+                    const insertSQL = jsonData.map(row => {
+                        const values = columns.map(column => {
+                            let value = row[column];
                             if (value === '' || typeof value === 'undefined') {
                                 return 'NULL';
                             } else {
-                                const cleanedValue = typeof value === 'string' ? value.replace(/&nbsp;/g, '').trim() : value;
+                                let cleanedValue = typeof value === 'string' ? value.replace(/&nbsp;/g, '').trim() : value;
+                                // Remove caracteres especiais e acentuação gráfica
+                                cleanedValue = cleanedValue.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                                 return typeof cleanedValue === 'string' ? `'${cleanedValue.replace(/'/g, "''")}'` : `'${cleanedValue}'`;
                             }
                         }).join(', ');
