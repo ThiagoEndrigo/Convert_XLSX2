@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="styles.css"> <!-- Adiciona o arquivo CSS externo -->
 </head>
 <body>
-   
+
+    <img id="logo" src="https://github.com/ThiagoEndrigo/Convert_XLSX2/blob/main/Icone.png?raw=true" alt="Logo">
+    <h1>Conversor de Excel para SQL - Insert</h1>
+
+    <input id="file-input" type="file" onchange="handleFiles(event)" multiple accept=".xlsx, .xls">
+    <button id="clear-button" onclick="clearFiles()">Limpar Seleção</button>
+    <div id="sql-links"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
